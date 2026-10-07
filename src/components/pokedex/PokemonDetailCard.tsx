@@ -43,7 +43,7 @@ export function PokemonDetailCard({ pokemon }: PokemonDetailCardProps) {
             ))}
           </div>
 
-          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <dl className="mt-4 grid grid-cols-3 gap-2 text-xs sm:text-sm">
             <div>
               <dt className="font-bold uppercase tracking-[0.12em] text-pokedex-red-dark">Base XP</dt>
               <dd className="mt-1 text-pokedex-ink">{pokemon.baseExperience ?? '—'}</dd>
@@ -64,13 +64,13 @@ export function PokemonDetailCard({ pokemon }: PokemonDetailCardProps) {
         <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-pokedex-red-dark">
           Base Stats
         </h4>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-3 grid grid-cols-3 gap-2">
           {Object.entries(pokemonStatLabels).map(([key, label]) => (
-            <div key={key} className="rounded-xl border-2 border-pokedex-red bg-white p-3">
-              <dt className="text-xs font-bold uppercase tracking-[0.12em] text-pokedex-red-dark">
+            <div key={key} className="min-w-0 rounded-lg border-2 border-pokedex-red bg-white p-2">
+              <dt className="text-[10px] font-bold uppercase leading-tight tracking-[0.08em] text-pokedex-red-dark sm:text-xs">
                 {label}
               </dt>
-              <dd className="mt-2 text-xl font-bold text-pokedex-ink">
+              <dd className="mt-1 text-lg font-bold text-pokedex-ink sm:text-xl">
                 {pokemon.stats[key as keyof typeof pokemon.stats]}
               </dd>
             </div>

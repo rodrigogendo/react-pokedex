@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import { fetchPokemonPage } from '../../api/pokemonApi'
-import type { PokemonSummary } from '../../types/pokemon'
-import { PokemonDetailCard } from './PokemonDetailCard'
+import { fetchPokemonByName, fetchPokemonPage } from '../../api/pokemonApi'
+import type { PokemonDetail, PokemonSummary } from '../../types/pokemon'
 import { PokemonList } from './PokemonList'
 import { PokemonPagination } from './PokemonPagination'
 
@@ -11,10 +10,15 @@ const PAGE_SIZE = 100
 export function PokedexScreen() {
   const [pokemon, setPokemon] = useState<PokemonSummary[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [selectedPokemon, setSelectedPokemon] = useState<PokemonDetail | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState('')
   const [page, setPage] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
+
+  const handleSelect = (id: number) => {
+    setSelectedId((currentSelectedId) => (currentSelectedId === id ? null : id))
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -36,7 +40,7 @@ export function PokedexScreen() {
             return currentSelectedId
           }
 
-          return items[0]?.id ?? null
+          return null
         })
         setStatus('ready')
       } catch (error) {
@@ -60,7 +64,41 @@ export function PokedexScreen() {
     }
   }, [page])
 
-  const selectedPokemon = pokemon.find(({ id }) => id === selectedId) ?? null
+  useEffect(() => {
+    let isMounted = true
+
+    const selectedSummary = pokemon.find(({ id }) => id === selectedId) ?? null
+
+    if (!selectedSummary) {
+      setSelectedPokemon(null)
+      return
+    }
+
+    const loadSelectedPokemon = async () => {
+      try {
+        const detail = await fetchPokemonByName(selectedSummary.name)
+
+        if (!isMounted) {
+          return
+        }
+
+        setSelectedPokemon(detail)
+      } catch (error) {
+        if (!isMounted) {
+          return
+        }
+
+        setSelectedPokemon(null)
+      }
+    }
+
+    void loadSelectedPokemon()
+
+    return () => {
+      isMounted = false
+    }
+  }, [pokemon, selectedId])
+
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   return (
@@ -87,9 +125,10 @@ export function PokedexScreen() {
       <PokemonList
         pokemon={pokemon}
         selectedId={selectedId}
+        selectedPokemon={selectedPokemon}
         status={status}
         errorMessage={errorMessage}
-        onSelect={setSelectedId}
+        onSelect={handleSelect}
       />
 
       <div className="mt-6">
@@ -99,30 +138,6 @@ export function PokedexScreen() {
           onPageChange={setPage}
         />
       </div>
-
-      {selectedPokemon && status === 'ready' && (
-        <div className="mt-6">
-          <p className="font-pixel text-[10px] uppercase tracking-[0.18em] text-pokedex-red-dark">
-            Selected Pokémon
-          </p>
-          <PokemonDetailCard
-            pokemon={{
-              ...selectedPokemon,
-              baseExperience: null,
-              height: 0,
-              weight: 0,
-              stats: {
-                hp: 0,
-                attack: 0,
-                defense: 0,
-                specialAttack: 0,
-                specialDefense: 0,
-                speed: 0,
-              },
-            }}
-          />
-        </div>
-      )}
     </section>
   )
 }

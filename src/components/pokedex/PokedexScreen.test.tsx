@@ -112,6 +112,96 @@ describe('PokedexScreen', () => {
     fetchMock.mockRestore()
   })
 
+  it('loads a full Pokémon detail when a roster item is selected', async () => {
+    vi.mocked(fetchPokemonPage).mockResolvedValue({
+      totalCount: 2,
+      items: [
+        { id: 25, name: 'pikachu', imageUrl: 'pikachu.png', types: [{ id: 17, name: 'electric' }] },
+      ],
+    })
+
+    vi.mocked(fetchPokemonByName).mockResolvedValue({
+      id: 25,
+      name: 'pikachu',
+      imageUrl: 'pikachu.png',
+      types: [{ id: 17, name: 'electric' }],
+      baseExperience: 112,
+      height: 4,
+      weight: 60,
+      stats: {
+        hp: 35,
+        attack: 55,
+        defense: 40,
+        specialAttack: 50,
+        specialDefense: 50,
+        speed: 90,
+      },
+    })
+
+    render(<PokedexScreen />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /pikachu/i }))
+
+    await waitFor(() => {
+      expect(fetchPokemonByName).toHaveBeenCalledWith('pikachu')
+    })
+  })
+
+  it('toggles the selected Pokémon inline panel open and closed', async () => {
+    vi.mocked(fetchPokemonPage).mockResolvedValue({
+      totalCount: 2,
+      items: [
+        { id: 25, name: 'pikachu', imageUrl: 'pikachu.png', types: [{ id: 17, name: 'electric' }] },
+        { id: 26, name: 'raichu', imageUrl: 'raichu.png', types: [{ id: 17, name: 'electric' }] },
+      ],
+    })
+
+    vi.mocked(fetchPokemonByName).mockResolvedValue({
+      id: 25,
+      name: 'pikachu',
+      imageUrl: 'pikachu.png',
+      types: [{ id: 17, name: 'electric' }],
+      baseExperience: 112,
+      height: 4,
+      weight: 60,
+      stats: {
+        hp: 35,
+        attack: 55,
+        defense: 40,
+        specialAttack: 50,
+        specialDefense: 50,
+        speed: 90,
+      },
+    })
+
+    render(<PokedexScreen />)
+
+    const pikachuButton = await screen.findByRole('button', { name: /pikachu/i })
+    expect(pikachuButton).toHaveAttribute('aria-pressed', 'false')
+    expect(fetchPokemonByName).not.toHaveBeenCalled()
+
+    fireEvent.click(pikachuButton)
+
+    await waitFor(() => {
+      expect(fetchPokemonByName).toHaveBeenCalledWith('pikachu')
+    })
+
+    const statsHeading = await screen.findByText('Base Stats')
+    const detailCard = statsHeading.closest('article')
+    expect(detailCard?.parentElement).toHaveClass('md:col-span-2')
+    expect(detailCard?.querySelector('dl')).toHaveClass('grid-cols-3')
+    expect(statsHeading.nextElementSibling).toHaveClass('grid-cols-3')
+    expect(statsHeading.nextElementSibling?.firstElementChild).toHaveClass('p-2')
+    expect(pikachuButton).toHaveClass('w-full')
+    expect(pikachuButton.parentElement).not.toHaveClass('md:col-span-2')
+
+    fireEvent.click(pikachuButton)
+
+    await waitFor(() => {
+      expect(screen.queryByText('Base Stats')).not.toBeInTheDocument()
+    })
+  })
+
   it('requests the full Pokémon roster in paginated chunks', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch')
     fetchMock.mockResolvedValueOnce(

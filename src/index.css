@@ -13,11 +13,12 @@
 	--color-pokedex-ink: #252a2c;
 	--color-pokedex-muted: #687276;
 	--color-pokedex-screen: #dce9d2;
+	--font-sans: "Pokemon GB", monospace;
 	--font-pixel: "Pokemon GB", monospace;
 }
 
 :root {
-	font-family: "Trebuchet MS", sans-serif;
+	font-family: var(--font-sans);
 	color: var(--color-pokedex-ink);
 	background: var(--color-pokedex-paper);
 	font-synthesis: none;

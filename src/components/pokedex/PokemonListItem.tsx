@@ -12,7 +12,7 @@ export function PokemonListItem({ pokemon, isSelected, onSelect }: PokemonListIt
       type="button"
       aria-pressed={isSelected}
       onClick={() => onSelect(pokemon.id)}
-      className={`flex items-center justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all duration-150 hover:-translate-y-0.5 ${
+      className={`flex w-full items-center justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all duration-150 hover:-translate-y-0.5 ${
         isSelected
           ? 'border-pokedex-red bg-pokedex-red text-white shadow-[4px_4px_0_var(--color-pokedex-red-dark)]'
           : 'border-pokedex-red bg-pokedex-paper text-pokedex-ink'
@@ -43,8 +43,13 @@ export function PokemonListItem({ pokemon, isSelected, onSelect }: PokemonListIt
         </div>
       </div>
 
-      <span className={`text-xs font-bold uppercase tracking-[0.12em] ${isSelected ? 'text-white' : 'text-pokedex-red-dark'}`}>
-        {isSelected ? 'Selected' : 'View'}
+      <span
+        aria-label={isSelected ? 'Collapse details' : 'Expand details'}
+        className={`inline-flex items-center justify-center text-2xl leading-none transition-transform duration-200 ${
+          isSelected ? 'rotate-180 text-white' : 'text-pokedex-red-dark'
+        }`}
+      >
+        ▾
       </span>
     </button>
   )
