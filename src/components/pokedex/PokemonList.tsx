@@ -43,7 +43,7 @@ export function PokemonList({
   }
 
   return (
-    <div className="grid gap-3 md:grid-cols-2">
+    <div className="page-shell grid gap-3 md:grid-cols-2">
       {pokemon.map((entry) => (
         <PokemonListItem
           key={entry.id}

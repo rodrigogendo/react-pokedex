@@ -1,6 +1,7 @@
 import type {
   PokemonApiDetail,
   PokemonDetail,
+  PokemonListPage,
   PokemonListResponse,
   PokemonStats,
   PokemonSummary,
@@ -69,19 +70,29 @@ const requestJson = async <T>(url: string): Promise<T> => {
   return (await response.json()) as T
 }
 
-export async function fetchPokemonList(limit = 1000): Promise<PokemonSummary[]> {
-  const list = await requestJson<PokemonListResponse>(`${apiUrl('/pokemon')}?limit=${limit}`)
+export async function fetchPokemonPage(limit = 100, offset = 0): Promise<PokemonListPage> {
+  const list = await requestJson<PokemonListResponse>(
+    `${apiUrl('/pokemon')}?limit=${limit}&offset=${offset}`,
+  )
 
-  return list.results.map(({ name, url }) => {
-    const id = parseResourceId(url)
+  return {
+    totalCount: list.count,
+    items: list.results.map(({ name, url }) => {
+      const id = parseResourceId(url)
 
-    return {
-      id,
-      name,
-      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`,
-      types: [],
-    }
-  })
+      return {
+        id,
+        name,
+        imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`,
+        types: [],
+      }
+    }),
+  }
+}
+
+export async function fetchPokemonList(limit = 100, offset = 0): Promise<PokemonSummary[]> {
+  const { items } = await fetchPokemonPage(limit, offset)
+  return items
 }
 
 export async function fetchPokemonByName(name: string): Promise<PokemonDetail> {

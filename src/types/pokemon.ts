@@ -40,6 +40,11 @@ export type PokemonListResponse = {
   results: PokemonListItem[]
 }
 
+export type PokemonListPage = {
+  items: PokemonSummary[]
+  totalCount: number
+}
+
 export type PokemonTypeApiEntry = {
   slot: number
   type: NamedApiResource

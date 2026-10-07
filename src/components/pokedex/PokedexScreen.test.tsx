@@ -3,10 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { PokedexScreen } from './PokedexScreen'
 import { SearchScreen } from '../search/SearchScreen'
-import { fetchPokemonByName, fetchPokemonByType, fetchPokemonList } from '../../api/pokemonApi'
+import { fetchPokemonByName, fetchPokemonByType, fetchPokemonPage } from '../../api/pokemonApi'
 
 vi.mock('../../api/pokemonApi', () => ({
   fetchPokemonList: vi.fn(),
+  fetchPokemonPage: vi.fn(),
   fetchPokemonByName: vi.fn(),
   fetchPokemonByType: vi.fn(),
 }))
@@ -23,10 +24,13 @@ describe('PokedexScreen', () => {
   })
 
   it('renders Pokémon fetched from the API', async () => {
-    vi.mocked(fetchPokemonList).mockResolvedValue([
-      { id: 94, name: 'Gengar', imageUrl: null, types: [] },
-      { id: 25, name: 'Pikachu', imageUrl: null, types: [] },
-    ])
+    vi.mocked(fetchPokemonPage).mockResolvedValue({
+      totalCount: 2,
+      items: [
+        { id: 94, name: 'Gengar', imageUrl: null, types: [] },
+        { id: 25, name: 'Pikachu', imageUrl: null, types: [] },
+      ],
+    })
 
     render(<PokedexScreen />)
 
@@ -102,6 +106,41 @@ describe('PokedexScreen', () => {
         name: 'pikachu',
         imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/25.png',
         types: [{ id: 13, name: 'electric' }],
+      },
+    ])
+
+    fetchMock.mockRestore()
+  })
+
+  it('requests the full Pokémon roster in paginated chunks', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+    fetchMock.mockResolvedValueOnce(
+      mockFetchResponse({
+        count: 1351,
+        results: [
+          { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/' },
+          { name: 'ivysaur', url: 'https://pokeapi.co/api/v2/pokemon/2/' },
+        ],
+      }),
+    )
+
+    const { fetchPokemonList: actualFetchPokemonList } =
+      await vi.importActual<typeof import('../../api/pokemonApi')>('../../api/pokemonApi')
+
+    const results = await actualFetchPokemonList(2, 0)
+
+    expect(results).toEqual([
+      {
+        id: 1,
+        name: 'bulbasaur',
+        imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/1.png',
+        types: [],
+      },
+      {
+        id: 2,
+        name: 'ivysaur',
+        imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/2.png',
+        types: [],
       },
     ])
 
