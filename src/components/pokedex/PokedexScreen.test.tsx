@@ -143,7 +143,7 @@ describe('PokedexScreen', () => {
   })
 
   it('ignores stale async name responses so the latest search wins', async () => {
-    let resolveFirst: (value: {
+    let resolveFirst!: (value: {
       id: number
       dexNumber: number
       name: string
@@ -161,7 +161,7 @@ describe('PokedexScreen', () => {
         speed: number
       }
     }) => void
-    let resolveSecond: (value: {
+    let resolveSecond!: (value: {
       id: number
       dexNumber: number
       name: string

@@ -107,16 +107,16 @@ export function PokedexScreen() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   return (
-    <section className="mx-auto mt-8 w-full max-w-5xl rounded-lg border-4 border-pokedex-red bg-white px-6 py-8 shadow-[8px_8px_0_var(--color-pokedex-red-dark)] sm:px-8">
+    <section className="page-shell mx-auto w-full max-w-5xl rounded-2xl border-4 border-pokedex-red bg-white px-4 py-6 shadow-[8px_8px_0_var(--color-pokedex-red-dark)] sm:px-8 sm:py-8">
       <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-pixel text-xs uppercase tracking-[0.18em] text-pokedex-red-dark">
             Pokédex
           </p>
-          <h2 className="mt-3 text-3xl font-bold text-pokedex-ink">Pokémon roster</h2>
+          <h2 className="mt-3 text-2xl font-bold text-pokedex-ink sm:text-3xl">Pokémon roster</h2>
         </div>
 
-        <p className="text-sm font-bold uppercase tracking-[0.12em] text-pokedex-red-dark">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-pokedex-red-dark sm:text-sm">
           Species {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)} / {totalCount}
         </p>
       </div>

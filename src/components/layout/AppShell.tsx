@@ -22,8 +22,8 @@ export function AppShell() {
   const [activeScreen, setActiveScreen] = useState<ScreenName>('home')
 
   return (
-    <main className="min-h-screen px-4 py-10 sm:px-8 sm:py-16">
-      <div className="mx-auto max-w-6xl">
+    <main className="page-shell min-h-screen px-3 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         <TopNav items={navItems} activeScreen={activeScreen} onNavigate={setActiveScreen} />
         {screenMap[activeScreen]}
       </div>

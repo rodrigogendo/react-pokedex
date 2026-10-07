@@ -31,10 +31,21 @@
 	box-sizing: border-box;
 }
 
+html {
+	background: #f4efe6;
+}
+
 body {
 	min-width: 320px;
 	min-height: 100vh;
 	margin: 0;
+	background:
+		radial-gradient(circle at top, rgba(217, 75, 67, 0.08), transparent 36%),
+		linear-gradient(180deg, #f7f3ea 0%, #efeae0 100%);
+}
+
+#root {
+	min-height: 100vh;
 }
 
 button,
@@ -66,4 +77,12 @@ input {
 
 .page-shell {
 	animation: pageFadeIn 220ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.page-shell,
+	*[class*="animate-"] {
+		animation: none !important;
+		transition: none !important;
+	}
 }

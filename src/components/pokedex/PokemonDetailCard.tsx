@@ -39,7 +39,7 @@ export function PokemonDetailCard({
             <span>#{String(pokemon.dexNumber).padStart(3, '0')}</span>
           </div>
 
-          <h3 className="mt-2 h-[2.5em] min-w-0 overflow-hidden text-2xl font-bold capitalize leading-tight text-pokedex-ink [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:text-3xl">
+          <h3 className="mt-2 min-w-0 break-words text-2xl font-bold capitalize leading-tight text-pokedex-ink sm:text-3xl">
             {formatPokemonName(pokemon.name)}
           </h3>
 
@@ -73,7 +73,7 @@ export function PokemonDetailCard({
             {pokemon.types.map(({ name, id }) => (
               <span
                 key={`${id}-${name}`}
-                className="rounded-full border-2 border-pokedex-red bg-white px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-pokedex-red-dark"
+                className="rounded-full border-2 border-pokedex-red bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-pokedex-red-dark sm:text-xs"
               >
                 {name}
               </span>

@@ -14,7 +14,7 @@ export function TypeFilter({
   onPokemonSelect,
 }: TypeFilterProps) {
   return (
-    <section className="mt-6">
+    <section className="mt-6 rounded-2xl border-2 border-pokedex-red bg-pokedex-paper p-4 shadow-[4px_4px_0_var(--color-pokedex-red-dark)] sm:p-5">
       <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-pokedex-red-dark">
         Filter by Type
       </h3>
