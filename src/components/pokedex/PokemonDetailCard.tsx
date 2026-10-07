@@ -1,5 +1,6 @@
 import type { PokemonDetail, PokemonFormSummary } from '../../types/pokemon'
 import { pokemonStatLabels } from '../../types/pokemon'
+import { formatPokemonName } from '../../utils/pokemon'
 
 type PokemonDetailCardProps = {
   pokemon: PokemonDetail
@@ -19,11 +20,11 @@ export function PokemonDetailCard({
   return (
     <article className="mt-6 animate-[formSlideIn_240ms_ease-out] rounded-2xl border-4 border-pokedex-red bg-pokedex-paper p-4 shadow-[6px_6px_0_var(--color-pokedex-red-dark)] sm:p-6">
       <div className="flex flex-col gap-5 md:flex-row md:items-center">
-        <div className="flex flex-1 items-center justify-center rounded-xl border-2 border-pokedex-red bg-white p-4">
+        <div className="flex min-w-0 flex-1 items-center justify-center rounded-xl border-2 border-pokedex-red bg-white p-4">
           {pokemon.imageUrl ? (
             <img
               src={pokemon.imageUrl}
-              alt={pokemon.name}
+              alt={formatPokemonName(pokemon.name)}
               className="h-40 w-40 object-contain sm:h-48 sm:w-48"
             />
           ) : (
@@ -33,12 +34,14 @@ export function PokemonDetailCard({
           )}
         </div>
 
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-pokedex-red-dark">
             <span>#{String(pokemon.dexNumber).padStart(3, '0')}</span>
           </div>
 
-          <h3 className="mt-2 text-3xl font-bold capitalize text-pokedex-ink">{pokemon.name}</h3>
+          <h3 className="mt-2 h-[2.5em] min-w-0 overflow-hidden text-2xl font-bold capitalize leading-tight text-pokedex-ink [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:text-3xl">
+            {formatPokemonName(pokemon.name)}
+          </h3>
 
           {alternateForms.length > 0 && onFormSelect && (
             <div className="mt-3">
@@ -52,13 +55,14 @@ export function PokemonDetailCard({
                     type="button"
                     aria-pressed={pokemon.id === form.id}
                     onClick={() => onFormSelect(form)}
-                    className={`rounded-md border-2 px-2 py-1 text-xs font-bold capitalize transition ${
+                    title={formatPokemonName(form.name)}
+                    className={`max-w-full truncate rounded-md border-2 px-2 py-1 text-xs font-bold capitalize transition ${
                       pokemon.id === form.id
                         ? 'border-pokedex-red bg-pokedex-red text-white'
                         : 'border-pokedex-red bg-white text-pokedex-red-dark hover:bg-pokedex-paper'
                     }`}
                   >
-                    {form.name}
+                    {formatPokemonName(form.name)}
                   </button>
                 ))}
               </div>

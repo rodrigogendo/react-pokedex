@@ -235,6 +235,7 @@ describe('PokedexScreen', () => {
     expect(statsHeading.nextElementSibling).toHaveClass('grid-cols-3')
     expect(statsHeading.nextElementSibling?.firstElementChild).toHaveClass('p-2')
     expect(pikachuButton).toHaveClass('w-full')
+    expect(pikachuButton).toHaveClass('h-20')
     expect(pikachuButton.parentElement).not.toHaveClass('md:col-span-2')
 
     fireEvent.click(pikachuButton)
@@ -335,21 +336,21 @@ describe('PokedexScreen', () => {
 
     const speciesButton = await screen.findByRole('button', { name: /genesect/i })
     fireEvent.click(speciesButton)
-    expect(await screen.findByRole('button', { name: 'genesect-douse' })).toHaveAttribute(
+    expect(await screen.findByRole('button', { name: 'genesect douse' })).toHaveAttribute(
       'aria-pressed',
       'false',
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'genesect-douse' }))
+    fireEvent.click(screen.getByRole('button', { name: 'genesect douse' }))
 
     await waitFor(() => {
       expect(fetchPokemonByName).toHaveBeenLastCalledWith('genesect-douse')
-      expect(screen.getByRole('button', { name: 'genesect-douse' })).toHaveAttribute(
+      expect(screen.getByRole('button', { name: 'genesect douse' })).toHaveAttribute(
         'aria-pressed',
         'true',
       )
     })
     expect(speciesButton).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('heading', { name: 'genesect-douse' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'genesect douse' })).toBeInTheDocument()
   })
 })

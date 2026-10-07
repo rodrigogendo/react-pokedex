@@ -1,0 +1,1 @@
+export const formatPokemonName = (name: string) => name.replaceAll('-', ' ')

@@ -62,7 +62,7 @@ export function PokemonList({
               <div
                 key={entry.id}
                 className={`w-full ${
-                  selectedIndex === 0 && index === 1 ? 'order-3 md:order-none' : ''
+                  selectedIndex === 0 && index === 1 ? 'order-3 md:order-0' : ''
                 }`}
               >
                 <PokemonListItem
@@ -76,7 +76,7 @@ export function PokemonList({
             {expandedPokemon && selectedPokemon && (
               <div
                 className={`w-full animate-[pageFadeIn_220ms_ease-out] md:col-span-2 ${
-                  selectedIndex === 0 ? 'order-2 md:order-none' : ''
+                  selectedIndex === 0 ? 'order-2 md:order-0' : ''
                 }`}
               >
                 <PokemonDetailCard
