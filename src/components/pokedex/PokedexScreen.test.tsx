@@ -27,8 +27,8 @@ describe('PokedexScreen', () => {
     vi.mocked(fetchPokemonPage).mockResolvedValue({
       totalCount: 2,
       items: [
-        { id: 94, name: 'Gengar', imageUrl: null, types: [] },
-        { id: 25, name: 'Pikachu', imageUrl: null, types: [] },
+        { id: 94, dexNumber: 94, name: 'Gengar', imageUrl: null, types: [] },
+        { id: 25, dexNumber: 25, name: 'Pikachu', imageUrl: null, types: [] },
       ],
     })
 
@@ -42,6 +42,7 @@ describe('PokedexScreen', () => {
   it('searches Pokémon by name and by type', async () => {
     vi.mocked(fetchPokemonByName).mockResolvedValue({
       id: 25,
+      dexNumber: 25,
       name: 'pikachu',
       imageUrl: 'pikachu.png',
       types: [{ id: 17, name: 'electric' }],
@@ -59,8 +60,8 @@ describe('PokedexScreen', () => {
     })
 
     vi.mocked(fetchPokemonByType).mockResolvedValue([
-      { id: 25, name: 'pikachu', imageUrl: 'pikachu.png', types: [{ id: 17, name: 'electric' }] },
-      { id: 26, name: 'raichu', imageUrl: 'raichu.png', types: [{ id: 17, name: 'electric' }] },
+      { id: 25, dexNumber: 25, name: 'pikachu', imageUrl: 'pikachu.png', types: [{ id: 17, name: 'electric' }] },
+      { id: 26, dexNumber: 26, name: 'raichu', imageUrl: 'raichu.png', types: [{ id: 17, name: 'electric' }] },
     ])
 
     render(<SearchScreen />)
@@ -93,13 +94,36 @@ describe('PokedexScreen', () => {
     expect((await screen.findAllByText('Base Stats')).length).toBe(2)
   })
 
-  it('maps type results to a summary with a generated sprite URL', async () => {
+  it('groups type results under their species with alternate forms attached', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch')
     fetchMock.mockResolvedValueOnce(
       mockFetchResponse({
         id: 13,
         name: 'electric',
-        pokemon: [{ pokemon: { name: 'pikachu', url: 'https://pokeapi.co/api/v2/pokemon/25/' } }],
+        pokemon: [{ pokemon: { name: 'pikachu-rock-star', url: 'https://pokeapi.co/api/v2/pokemon/10025/' } }],
+      }),
+    )
+    fetchMock.mockResolvedValueOnce(
+      mockFetchResponse({
+        id: 10025,
+        name: 'pikachu-rock-star',
+        species: { name: 'pikachu', url: 'https://pokeapi.co/api/v2/pokemon-species/25/' },
+        base_experience: 112,
+        height: 4,
+        weight: 60,
+        types: [{ slot: 1, type: { name: 'electric', url: 'https://pokeapi.co/api/v2/type/13/' } }],
+        stats: [],
+        sprites: { other: { home: { front_default: 'pikachu-rock-star.png' } } },
+      }),
+    )
+    fetchMock.mockResolvedValueOnce(
+      mockFetchResponse({
+        id: 25,
+        name: 'pikachu',
+        varieties: [
+          { is_default: true, pokemon: { name: 'pikachu', url: 'https://pokeapi.co/api/v2/pokemon/25/' } },
+          { is_default: false, pokemon: { name: 'pikachu-rock-star', url: 'https://pokeapi.co/api/v2/pokemon/10025/' } },
+        ],
       }),
     )
 
@@ -111,9 +135,17 @@ describe('PokedexScreen', () => {
     expect(results).toEqual([
       {
         id: 25,
+        dexNumber: 25,
         name: 'pikachu',
         imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/25.png',
-        types: [{ id: 13, name: 'electric' }],
+        types: [],
+        alternateForms: [
+          {
+            id: 10025,
+            name: 'pikachu-rock-star',
+            imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10025.png',
+          },
+        ],
       },
     ])
 
@@ -124,12 +156,13 @@ describe('PokedexScreen', () => {
     vi.mocked(fetchPokemonPage).mockResolvedValue({
       totalCount: 2,
       items: [
-        { id: 25, name: 'pikachu', imageUrl: 'pikachu.png', types: [{ id: 17, name: 'electric' }] },
+        { id: 25, dexNumber: 25, name: 'pikachu', imageUrl: 'pikachu.png', types: [{ id: 17, name: 'electric' }] },
       ],
     })
 
     vi.mocked(fetchPokemonByName).mockResolvedValue({
       id: 25,
+      dexNumber: 25,
       name: 'pikachu',
       imageUrl: 'pikachu.png',
       types: [{ id: 17, name: 'electric' }],
@@ -159,13 +192,14 @@ describe('PokedexScreen', () => {
     vi.mocked(fetchPokemonPage).mockResolvedValue({
       totalCount: 2,
       items: [
-        { id: 25, name: 'pikachu', imageUrl: 'pikachu.png', types: [{ id: 17, name: 'electric' }] },
-        { id: 26, name: 'raichu', imageUrl: 'raichu.png', types: [{ id: 17, name: 'electric' }] },
+        { id: 25, dexNumber: 25, name: 'pikachu', imageUrl: 'pikachu.png', types: [{ id: 17, name: 'electric' }] },
+        { id: 26, dexNumber: 26, name: 'raichu', imageUrl: 'raichu.png', types: [{ id: 17, name: 'electric' }] },
       ],
     })
 
     vi.mocked(fetchPokemonByName).mockResolvedValue({
       id: 25,
+      dexNumber: 25,
       name: 'pikachu',
       imageUrl: 'pikachu.png',
       types: [{ id: 17, name: 'electric' }],
@@ -210,14 +244,24 @@ describe('PokedexScreen', () => {
     })
   })
 
-  it('requests the full Pokémon roster in paginated chunks', async () => {
+  it('loads all varieties for each species together on its dex-number page', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch')
     fetchMock.mockResolvedValueOnce(
       mockFetchResponse({
-        count: 1351,
+        count: 1025,
         results: [
-          { name: 'bulbasaur', url: 'https://pokeapi.co/api/v2/pokemon/1/' },
-          { name: 'ivysaur', url: 'https://pokeapi.co/api/v2/pokemon/2/' },
+          { name: 'genesect', url: 'https://pokeapi.co/api/v2/pokemon-species/648/' },
+        ],
+      }),
+    )
+    fetchMock.mockResolvedValueOnce(
+      mockFetchResponse({
+        id: 648,
+        name: 'genesect',
+        varieties: [
+          { is_default: true, pokemon: { name: 'genesect', url: 'https://pokeapi.co/api/v2/pokemon/649/' } },
+          { is_default: false, pokemon: { name: 'genesect-douse', url: 'https://pokeapi.co/api/v2/pokemon/10001/' } },
+          { is_default: false, pokemon: { name: 'genesect-shock', url: 'https://pokeapi.co/api/v2/pokemon/10002/' } },
         ],
       }),
     )
@@ -225,23 +269,87 @@ describe('PokedexScreen', () => {
     const { fetchPokemonList: actualFetchPokemonList } =
       await vi.importActual<typeof import('../../api/pokemonApi')>('../../api/pokemonApi')
 
-    const results = await actualFetchPokemonList(2, 0)
+    const results = await actualFetchPokemonList(1, 647)
 
     expect(results).toEqual([
       {
-        id: 1,
-        name: 'bulbasaur',
-        imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/1.png',
+        id: 649,
+        dexNumber: 648,
+        name: 'genesect',
+        imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/649.png',
         types: [],
-      },
-      {
-        id: 2,
-        name: 'ivysaur',
-        imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/2.png',
-        types: [],
+        alternateForms: [
+          {
+            id: 10001,
+            name: 'genesect-douse',
+            imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10001.png',
+          },
+          {
+            id: 10002,
+            name: 'genesect-shock',
+            imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/10002.png',
+          },
+        ],
       },
     ])
-
     fetchMock.mockRestore()
+  })
+
+  it('switches the selected species detail card to an alternate form', async () => {
+    vi.mocked(fetchPokemonPage).mockResolvedValue({
+      totalCount: 1,
+      items: [
+        {
+          id: 649,
+          dexNumber: 648,
+          name: 'genesect',
+          imageUrl: 'genesect.png',
+          types: [],
+          alternateForms: [
+            { id: 10001, name: 'genesect-douse', imageUrl: 'genesect-douse.png' },
+          ],
+        },
+      ],
+    })
+
+    vi.mocked(fetchPokemonByName).mockImplementation(async (name) => ({
+      id: name === 'genesect' ? 649 : 10001,
+      dexNumber: 648,
+      name,
+      imageUrl: `${name}.png`,
+      types: [],
+      baseExperience: 100,
+      height: 15,
+      weight: 825,
+      stats: {
+        hp: 71,
+        attack: 120,
+        defense: 95,
+        specialAttack: 120,
+        specialDefense: 95,
+        speed: 99,
+      },
+    }))
+
+    render(<PokedexScreen />)
+
+    const speciesButton = await screen.findByRole('button', { name: /genesect/i })
+    fireEvent.click(speciesButton)
+    expect(await screen.findByRole('button', { name: 'genesect-douse' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'genesect-douse' }))
+
+    await waitFor(() => {
+      expect(fetchPokemonByName).toHaveBeenLastCalledWith('genesect-douse')
+      expect(screen.getByRole('button', { name: 'genesect-douse' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+    })
+    expect(speciesButton).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('heading', { name: 'genesect-douse' })).toBeInTheDocument()
   })
 })

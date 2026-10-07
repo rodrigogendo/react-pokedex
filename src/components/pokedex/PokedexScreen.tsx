@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { fetchPokemonByName, fetchPokemonPage } from '../../api/pokemonApi'
-import type { PokemonDetail, PokemonSummary } from '../../types/pokemon'
+import type { PokemonDetail, PokemonFormSummary, PokemonSummary } from '../../types/pokemon'
 import { PokemonList } from './PokemonList'
 import { PokemonPagination } from './PokemonPagination'
 
@@ -11,13 +11,19 @@ export function PokedexScreen() {
   const [pokemon, setPokemon] = useState<PokemonSummary[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [selectedPokemon, setSelectedPokemon] = useState<PokemonDetail | null>(null)
+  const [selectedFormName, setSelectedFormName] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState('')
   const [page, setPage] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
 
   const handleSelect = (id: number) => {
+    setSelectedFormName(null)
     setSelectedId((currentSelectedId) => (currentSelectedId === id ? null : id))
+  }
+
+  const handleFormSelect = (form: PokemonFormSummary) => {
+    setSelectedFormName(form.name)
   }
 
   useEffect(() => {
@@ -70,20 +76,19 @@ export function PokedexScreen() {
     const selectedSummary = pokemon.find(({ id }) => id === selectedId) ?? null
 
     if (!selectedSummary) {
-      setSelectedPokemon(null)
       return
     }
 
     const loadSelectedPokemon = async () => {
       try {
-        const detail = await fetchPokemonByName(selectedSummary.name)
+        const detail = await fetchPokemonByName(selectedFormName ?? selectedSummary.name)
 
         if (!isMounted) {
           return
         }
 
         setSelectedPokemon(detail)
-      } catch (error) {
+      } catch {
         if (!isMounted) {
           return
         }
@@ -97,7 +102,7 @@ export function PokedexScreen() {
     return () => {
       isMounted = false
     }
-  }, [pokemon, selectedId])
+  }, [pokemon, selectedId, selectedFormName])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
@@ -112,7 +117,7 @@ export function PokedexScreen() {
         </div>
 
         <p className="text-sm font-bold uppercase tracking-[0.12em] text-pokedex-red-dark">
-          Showing {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)} / {totalCount}
+          Species {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)} / {totalCount}
         </p>
       </div>
 
@@ -129,6 +134,7 @@ export function PokedexScreen() {
         status={status}
         errorMessage={errorMessage}
         onSelect={handleSelect}
+        onFormSelect={handleFormSelect}
       />
 
       <div className="mt-6">

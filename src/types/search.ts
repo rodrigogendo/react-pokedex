@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react'
 
-import type { PokemonDetail, PokemonSummary } from './pokemon'
+import type { PokemonDetail, PokemonFormSummary, PokemonSummary } from './pokemon'
 
 export type SearchStatus = 'idle' | 'loading' | 'error' | 'success'
 
@@ -41,6 +41,7 @@ export type TypeFilterProps = {
   results: PokemonSummary[]
   selectedPokemonId: number | null
   selectedPokemon: PokemonDetail | null
+  onFormSelect: (form: PokemonFormSummary) => void
   onTypeSelect: (typeName: string) => void
   onPokemonSelect: (id: number) => void
 }

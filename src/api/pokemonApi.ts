@@ -1,8 +1,10 @@
 import type {
   PokemonApiDetail,
   PokemonDetail,
+  PokemonFormSummary,
   PokemonListPage,
   PokemonListResponse,
+  PokemonSpeciesDetailResponse,
   PokemonStats,
   PokemonSummary,
   PokemonTypeDetailResponse,
@@ -39,6 +41,7 @@ const mapPokemonStats = (stats: PokemonApiDetail['stats']): PokemonStats => ({
 
 const mapPokemonSummary = (pokemon: PokemonApiDetail): PokemonSummary => ({
   id: pokemon.id,
+  dexNumber: parseResourceId(pokemon.species.url),
   name: pokemon.name,
   imageUrl: pokemon.sprites?.other?.home?.front_default ?? null,
   types: pokemon.types.map(({ type }) => ({
@@ -46,6 +49,32 @@ const mapPokemonSummary = (pokemon: PokemonApiDetail): PokemonSummary => ({
     name: type.name,
   })),
 })
+
+const mapSpeciesSummary = (species: PokemonSpeciesDetailResponse): PokemonSummary | null => {
+  const defaultVariety = species.varieties.find(({ is_default }) => is_default) ?? species.varieties[0]
+
+  if (!defaultVariety) {
+    return null
+  }
+
+  const toFormSummary = ({ name, url }: { name: string; url: string }): PokemonFormSummary => {
+    const id = parseResourceId(url)
+    return {
+      id,
+      name,
+      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`,
+    }
+  }
+
+  return {
+    ...toFormSummary(defaultVariety.pokemon),
+    dexNumber: species.id,
+    types: [],
+    alternateForms: species.varieties
+      .filter(({ pokemon }) => pokemon.url !== defaultVariety.pokemon.url)
+      .map(({ pokemon }) => toFormSummary(pokemon)),
+  }
+}
 
 const mapPokemonDetail = (pokemon: PokemonApiDetail): PokemonDetail => ({
   ...mapPokemonSummary(pokemon),
@@ -70,22 +99,39 @@ const requestJson = async <T>(url: string): Promise<T> => {
   return (await response.json()) as T
 }
 
+const mapWithConcurrency = async <T, R>(
+  items: T[],
+  concurrency: number,
+  mapItem: (item: T) => Promise<R>,
+): Promise<R[]> => {
+  const results = new Array<R>(items.length)
+  let nextIndex = 0
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+      while (nextIndex < items.length) {
+        const index = nextIndex++
+        results[index] = await mapItem(items[index])
+      }
+    }),
+  )
+
+  return results
+}
+
 export async function fetchPokemonPage(limit = 100, offset = 0): Promise<PokemonListPage> {
   const list = await requestJson<PokemonListResponse>(
-    `${apiUrl('/pokemon')}?limit=${limit}&offset=${offset}`,
+    `${apiUrl('/pokemon-species')}?limit=${limit}&offset=${offset}`,
+  )
+  const species = await mapWithConcurrency(list.results, 10, ({ url }) =>
+    requestJson<PokemonSpeciesDetailResponse>(url),
   )
 
   return {
     totalCount: list.count,
-    items: list.results.map(({ name, url }) => {
-      const id = parseResourceId(url)
-
-      return {
-        id,
-        name,
-        imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`,
-        types: [],
-      }
+    items: species.flatMap((entry) => {
+      const summary = mapSpeciesSummary(entry)
+      return summary ? [summary] : []
     }),
   }
 }
@@ -122,17 +168,19 @@ export async function fetchPokemonByType(typeName: string): Promise<PokemonSumma
     throw toUserFriendlyError(typeName, 'type')
   }
 
-  const { id: typeId, name: typeLabel } = typeResponse
+  const matchedPokemon = await mapWithConcurrency(typeResponse.pokemon, 10, async ({ pokemon }) => {
+    const detail = await requestJson<PokemonApiDetail>(apiUrl(`/pokemon/${pokemon.name}`))
+    return parseResourceId(detail.species.url)
+  })
 
-  return typeResponse.pokemon.map(({ pokemon }) => {
-    const id = parseResourceId(pokemon.url)
+  const speciesIds = [...new Set(matchedPokemon)]
+  const species = await mapWithConcurrency(speciesIds, 10, (id) =>
+    requestJson<PokemonSpeciesDetailResponse>(apiUrl(`/pokemon-species/${id}`)),
+  )
 
-    return {
-      id,
-      name: pokemon.name,
-      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`,
-      types: [{ id: typeId, name: typeLabel }],
-    }
+  return species.flatMap((entry) => {
+    const summary = mapSpeciesSummary(entry)
+    return summary ? [summary] : []
   })
 }
 

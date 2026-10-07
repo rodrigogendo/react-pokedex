@@ -9,6 +9,7 @@ export function TypeFilter({
   results,
   selectedPokemonId,
   selectedPokemon,
+  onFormSelect,
   onTypeSelect,
   onPokemonSelect,
 }: TypeFilterProps) {
@@ -59,6 +60,7 @@ export function TypeFilter({
             status="ready"
             errorMessage=""
             onSelect={onPokemonSelect}
+            onFormSelect={onFormSelect}
           />
         </div>
       )}

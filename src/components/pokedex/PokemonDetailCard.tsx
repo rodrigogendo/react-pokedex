@@ -1,15 +1,23 @@
-import type { PokemonDetail } from '../../types/pokemon'
+import type { PokemonDetail, PokemonFormSummary } from '../../types/pokemon'
 import { pokemonStatLabels } from '../../types/pokemon'
 
 type PokemonDetailCardProps = {
   pokemon: PokemonDetail
+  baseForm?: PokemonFormSummary
+  alternateForms?: PokemonFormSummary[]
+  onFormSelect?: (form: PokemonFormSummary) => void
 }
 
 const formatMeasurement = (value: number, unit: string) => `${(value / 10).toFixed(1)} ${unit}`
 
-export function PokemonDetailCard({ pokemon }: PokemonDetailCardProps) {
+export function PokemonDetailCard({
+  pokemon,
+  baseForm,
+  alternateForms = [],
+  onFormSelect,
+}: PokemonDetailCardProps) {
   return (
-    <article className="mt-6 rounded-2xl border-4 border-pokedex-red bg-pokedex-paper p-4 shadow-[6px_6px_0_var(--color-pokedex-red-dark)] sm:p-6">
+    <article className="mt-6 animate-[formSlideIn_240ms_ease-out] rounded-2xl border-4 border-pokedex-red bg-pokedex-paper p-4 shadow-[6px_6px_0_var(--color-pokedex-red-dark)] sm:p-6">
       <div className="flex flex-col gap-5 md:flex-row md:items-center">
         <div className="flex flex-1 items-center justify-center rounded-xl border-2 border-pokedex-red bg-white p-4">
           {pokemon.imageUrl ? (
@@ -20,17 +28,42 @@ export function PokemonDetailCard({ pokemon }: PokemonDetailCardProps) {
             />
           ) : (
             <span className="text-lg font-bold uppercase tracking-[0.2em] text-pokedex-red-dark">
-              #{String(pokemon.id).padStart(3, '0')}
+              #{String(pokemon.dexNumber).padStart(3, '0')}
             </span>
           )}
         </div>
 
         <div className="flex-1">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-pokedex-red-dark">
-            <span>#{String(pokemon.id).padStart(3, '0')}</span>
+            <span>#{String(pokemon.dexNumber).padStart(3, '0')}</span>
           </div>
 
           <h3 className="mt-2 text-3xl font-bold capitalize text-pokedex-ink">{pokemon.name}</h3>
+
+          {alternateForms.length > 0 && onFormSelect && (
+            <div className="mt-3">
+              <h4 className="text-xs font-bold uppercase tracking-[0.12em] text-pokedex-red-dark">
+                Alternate Forms
+              </h4>
+              <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Alternate forms">
+                {[baseForm ?? { id: pokemon.id, name: pokemon.name, imageUrl: pokemon.imageUrl }, ...alternateForms].map((form) => (
+                  <button
+                    key={form.id}
+                    type="button"
+                    aria-pressed={pokemon.id === form.id}
+                    onClick={() => onFormSelect(form)}
+                    className={`rounded-md border-2 px-2 py-1 text-xs font-bold capitalize transition ${
+                      pokemon.id === form.id
+                        ? 'border-pokedex-red bg-pokedex-red text-white'
+                        : 'border-pokedex-red bg-white text-pokedex-red-dark hover:bg-pokedex-paper'
+                    }`}
+                  >
+                    {form.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-3 flex flex-wrap gap-2">
             {pokemon.types.map(({ name, id }) => (

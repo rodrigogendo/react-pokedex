@@ -27,7 +27,7 @@ export function PokemonListItem({ pokemon, isSelected, onSelect }: PokemonListIt
           />
         ) : (
           <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-xs font-bold uppercase text-pokedex-red-dark">
-            #{String(pokemon.id).padStart(3, '0')}
+            #{String(pokemon.dexNumber).padStart(3, '0')}
           </span>
         )}
 
@@ -37,7 +37,7 @@ export function PokemonListItem({ pokemon, isSelected, onSelect }: PokemonListIt
               isSelected ? 'text-white/90' : 'text-pokedex-red-dark'
             }`}
           >
-            #{String(pokemon.id).padStart(3, '0')}
+            #{String(pokemon.dexNumber).padStart(3, '0')}
           </span>
           <span className="block text-lg font-bold capitalize">{pokemon.name}</span>
         </div>

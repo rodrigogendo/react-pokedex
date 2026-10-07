@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 
 import { fetchPokemonByName, fetchPokemonByType } from '../../api/pokemonApi'
-import type { PokemonDetail, PokemonSummary } from '../../types/pokemon'
+import type { PokemonDetail, PokemonFormSummary, PokemonSummary } from '../../types/pokemon'
 import type { SearchStatus } from '../../types/search'
 import { NameSearchForm } from './NameSearchForm'
 import { TypeFilter } from './TypeFilter'
@@ -13,6 +13,7 @@ export function SearchScreen() {
   const [typeResults, setTypeResults] = useState<PokemonSummary[]>([])
   const [selectedTypePokemonId, setSelectedTypePokemonId] = useState<number | null>(null)
   const [selectedTypePokemon, setSelectedTypePokemon] = useState<PokemonDetail | null>(null)
+  const [selectedTypeFormName, setSelectedTypeFormName] = useState<string | null>(null)
   const [nameStatus, setNameStatus] = useState<SearchStatus>('idle')
   const [typeStatus, setTypeStatus] = useState<SearchStatus>('idle')
   const [nameError, setNameError] = useState('')
@@ -29,7 +30,7 @@ export function SearchScreen() {
 
     const loadSelectedPokemon = async () => {
       try {
-        const detail = await fetchPokemonByName(selectedTypeSummary.name)
+        const detail = await fetchPokemonByName(selectedTypeFormName ?? selectedTypeSummary.name)
 
         if (isCurrent) {
           setSelectedTypePokemon(detail)
@@ -46,7 +47,7 @@ export function SearchScreen() {
     return () => {
       isCurrent = false
     }
-  }, [selectedTypeSummary])
+  }, [selectedTypeSummary, selectedTypeFormName])
 
   const handleNameSearch = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -78,6 +79,7 @@ export function SearchScreen() {
     const normalizedQuery = typeName.trim().toLowerCase()
     setSelectedType(normalizedQuery)
     setSelectedTypePokemonId(null)
+    setSelectedTypeFormName(null)
     setTypeStatus('loading')
     setTypeError('')
     setTypeResults([])
@@ -98,7 +100,12 @@ export function SearchScreen() {
   }
 
   const handleTypePokemonSelect = (id: number) => {
+    setSelectedTypeFormName(null)
     setSelectedTypePokemonId((currentId) => (currentId === id ? null : id))
+  }
+
+  const handleTypeFormSelect = (form: PokemonFormSummary) => {
+    setSelectedTypeFormName(form.name)
   }
 
   return (
@@ -124,6 +131,7 @@ export function SearchScreen() {
         results={typeResults}
         selectedPokemonId={selectedTypePokemonId}
         selectedPokemon={selectedTypePokemon}
+        onFormSelect={handleTypeFormSelect}
         onTypeSelect={handleTypeSearch}
         onPokemonSelect={handleTypePokemonSelect}
       />

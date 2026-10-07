@@ -3,11 +3,19 @@ export type PokemonType = {
   name: string
 }
 
-export type PokemonSummary = {
+export type PokemonFormSummary = {
   id: number
   name: string
   imageUrl: string | null
+}
+
+export type PokemonSummary = {
+  id: number
+  dexNumber: number
+  name: string
+  imageUrl: string | null
   types: PokemonType[]
+  alternateForms?: PokemonFormSummary[]
 }
 
 export type PokemonStats = {
@@ -19,7 +27,7 @@ export type PokemonStats = {
   speed: number
 }
 
-export type PokemonDetail = PokemonSummary & {
+export type PokemonDetail = Omit<PokemonSummary, 'alternateForms'> & {
   baseExperience: number | null
   height: number
   weight: number
@@ -59,6 +67,7 @@ export type PokemonStatApiEntry = {
 export type PokemonApiDetail = {
   id: number
   name: string
+  species: NamedApiResource
   base_experience: number | null
   height: number
   weight: number
@@ -84,6 +93,15 @@ export type PokemonTypeDetailResponse = {
 
 export type PokemonTypeListResponse = {
   results: PokemonListItem[]
+}
+
+export type PokemonSpeciesDetailResponse = {
+  id: number
+  name: string
+  varieties: Array<{
+    is_default: boolean
+    pokemon: NamedApiResource
+  }>
 }
 
 export const pokemonStatLabels: Record<keyof PokemonStats, string> = {

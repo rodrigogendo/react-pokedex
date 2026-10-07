@@ -1,4 +1,4 @@
-import type { PokemonDetail, PokemonSummary } from '../../types/pokemon'
+import type { PokemonDetail, PokemonFormSummary, PokemonSummary } from '../../types/pokemon'
 import { PokemonDetailCard } from './PokemonDetailCard'
 import { PokemonListItem } from './PokemonListItem'
 
@@ -11,6 +11,7 @@ type PokemonListProps = {
   status: PokemonListStatus
   errorMessage: string
   onSelect: (id: number) => void
+  onFormSelect?: (form: PokemonFormSummary) => void
 }
 
 export function PokemonList({
@@ -20,6 +21,7 @@ export function PokemonList({
   status,
   errorMessage,
   onSelect,
+  onFormSelect,
 }: PokemonListProps) {
   if (status === 'loading') {
     return (
@@ -51,7 +53,7 @@ export function PokemonList({
         const rowPokemon = pokemon.slice(rowIndex * 2, rowIndex * 2 + 2)
         const selectedIndex = rowPokemon.findIndex((entry) => entry.id === selectedId)
         const expandedPokemon = rowPokemon.find(
-          (entry) => entry.id === selectedId && selectedPokemon?.id === entry.id,
+          (entry) => entry.id === selectedId && selectedPokemon?.dexNumber === entry.dexNumber,
         )
 
         return (
@@ -77,7 +79,17 @@ export function PokemonList({
                   selectedIndex === 0 ? 'order-2 md:order-none' : ''
                 }`}
               >
-                <PokemonDetailCard pokemon={selectedPokemon} />
+                <PokemonDetailCard
+                  key={selectedPokemon.id}
+                  pokemon={selectedPokemon}
+                  baseForm={{
+                    id: expandedPokemon.id,
+                    name: expandedPokemon.name,
+                    imageUrl: expandedPokemon.imageUrl,
+                  }}
+                  alternateForms={expandedPokemon.alternateForms}
+                  onFormSelect={onFormSelect}
+                />
               </div>
             )}
           </div>
