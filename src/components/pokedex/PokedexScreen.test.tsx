@@ -74,15 +74,23 @@ describe('PokedexScreen', () => {
       expect(fetchPokemonByName).toHaveBeenCalledWith('pikachu')
     })
 
-    fireEvent.change(screen.getByLabelText('Search for Types'), {
-      target: { value: '  electric  ' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: 'Search type' }))
+    expect(screen.queryByLabelText('Search for Types')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'fairy' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'electric' }))
 
     await waitFor(() => {
       expect(fetchPokemonByType).toHaveBeenCalledWith('electric')
     })
-    expect((await screen.findAllByText('pikachu')).length).toBeGreaterThan(0)
+
+    const typeResultButton = await screen.findByRole('button', { name: /pikachu/i })
+    expect(typeResultButton).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(typeResultButton)
+
+    await waitFor(() => {
+      expect(fetchPokemonByName).toHaveBeenCalledTimes(2)
+    })
+    expect(typeResultButton).toHaveAttribute('aria-pressed', 'true')
+    expect((await screen.findAllByText('Base Stats')).length).toBe(2)
   })
 
   it('maps type results to a summary with a generated sprite URL', async () => {

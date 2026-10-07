@@ -4,6 +4,27 @@ import type { PokemonDetail, PokemonSummary } from './pokemon'
 
 export type SearchStatus = 'idle' | 'loading' | 'error' | 'success'
 
+export const pokemonTypes = [
+  'normal',
+  'fire',
+  'water',
+  'electric',
+  'grass',
+  'ice',
+  'fighting',
+  'poison',
+  'ground',
+  'flying',
+  'psychic',
+  'bug',
+  'rock',
+  'ghost',
+  'dragon',
+  'dark',
+  'steel',
+  'fairy',
+] as const
+
 export type NameSearchFormProps = {
   query: string
   status: SearchStatus
@@ -13,11 +34,13 @@ export type NameSearchFormProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }
 
-export type TypeSearchFormProps = {
-  query: string
+export type TypeFilterProps = {
+  selectedType: string | null
   status: SearchStatus
   error: string
   results: PokemonSummary[]
-  onQueryChange: (value: string) => void
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void
+  selectedPokemonId: number | null
+  selectedPokemon: PokemonDetail | null
+  onTypeSelect: (typeName: string) => void
+  onPokemonSelect: (id: number) => void
 }
