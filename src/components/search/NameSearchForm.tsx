@@ -43,6 +43,12 @@ export function NameSearchForm({
         {status === 'error' && error && (
           <p className="mt-3 text-sm font-bold text-pokedex-red-dark">{error}</p>
         )}
+
+        {status === 'success' && !result && (
+          <p className="mt-3 text-sm font-bold text-pokedex-red-dark">
+            No Pokémon matched that search. Please try another name.
+          </p>
+        )}
       </form>
 
       {result && <PokemonDetailCard pokemon={result} />}

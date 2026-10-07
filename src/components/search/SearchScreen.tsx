@@ -63,6 +63,7 @@ export function SearchScreen() {
 
     setNameStatus('loading')
     setNameError('')
+    setNameResult(null)
 
     try {
       const result = await fetchPokemonByName(normalizedQuery)
@@ -80,6 +81,7 @@ export function SearchScreen() {
     setSelectedType(normalizedQuery)
     setSelectedTypePokemonId(null)
     setSelectedTypeFormName(null)
+    setSelectedTypePokemon(null)
     setTypeStatus('loading')
     setTypeError('')
     setTypeResults([])
@@ -87,12 +89,17 @@ export function SearchScreen() {
     try {
       const results = await fetchPokemonByType(normalizedQuery)
       setTypeResults(results)
-      setTypeStatus(results.length ? 'success' : 'error')
+      setSelectedTypePokemon(null)
 
       if (!results.length) {
+        setTypeStatus('error')
         setTypeError('No Pokémon were found for that type.')
+        return
       }
+
+      setTypeStatus('success')
     } catch (error) {
+      setSelectedTypePokemon(null)
       setTypeResults([])
       setTypeStatus('error')
       setTypeError(error instanceof Error ? error.message : 'No Pokémon were found for that type.')

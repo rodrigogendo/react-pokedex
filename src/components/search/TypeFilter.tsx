@@ -48,6 +48,12 @@ export function TypeFilter({
         <p className="mt-3 text-sm font-bold text-pokedex-red-dark">{error}</p>
       )}
 
+      {status === 'success' && results.length === 0 && (
+        <p className="mt-3 text-sm font-bold text-pokedex-red-dark">
+          No Pokémon matched that type. Try a different filter.
+        </p>
+      )}
+
       {status === 'success' && results.length > 0 && (
         <div className="mt-5">
           <h4 className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-pokedex-red-dark">

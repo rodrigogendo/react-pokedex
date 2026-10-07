@@ -94,6 +94,159 @@ describe('PokedexScreen', () => {
     expect((await screen.findAllByText('Base Stats')).length).toBe(2)
   })
 
+  it('clears stale type details when the next search has no matches', async () => {
+    vi.mocked(fetchPokemonByName).mockResolvedValue({
+      id: 25,
+      dexNumber: 25,
+      name: 'pikachu',
+      imageUrl: 'pikachu.png',
+      types: [{ id: 17, name: 'electric' }],
+      baseExperience: 112,
+      height: 4,
+      weight: 60,
+      stats: {
+        hp: 35,
+        attack: 55,
+        defense: 40,
+        specialAttack: 50,
+        specialDefense: 50,
+        speed: 90,
+      },
+    })
+
+    vi.mocked(fetchPokemonByType)
+      .mockResolvedValueOnce([
+        { id: 25, dexNumber: 25, name: 'pikachu', imageUrl: 'pikachu.png', types: [{ id: 17, name: 'electric' }] },
+      ])
+      .mockResolvedValueOnce([])
+
+    render(<SearchScreen />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'electric' }))
+
+    await waitFor(() => {
+      expect(fetchPokemonByType).toHaveBeenCalledWith('electric')
+    })
+
+    fireEvent.click(await screen.findByRole('button', { name: /pikachu/i }))
+
+    expect(await screen.findByText('Base Stats')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'grass' }))
+
+    await waitFor(() => {
+      expect(fetchPokemonByType).toHaveBeenLastCalledWith('grass')
+    })
+
+    expect(await screen.findByText('No Pokémon were found for that type.')).toBeInTheDocument()
+    expect(screen.queryByText('Base Stats')).not.toBeInTheDocument()
+  })
+
+  it('ignores stale async name responses so the latest search wins', async () => {
+    let resolveFirst: (value: {
+      id: number
+      dexNumber: number
+      name: string
+      imageUrl: string
+      types: { id: number; name: string }[]
+      baseExperience: number
+      height: number
+      weight: number
+      stats: {
+        hp: number
+        attack: number
+        defense: number
+        specialAttack: number
+        specialDefense: number
+        speed: number
+      }
+    }) => void
+    let resolveSecond: (value: {
+      id: number
+      dexNumber: number
+      name: string
+      imageUrl: string
+      types: { id: number; name: string }[]
+      baseExperience: number
+      height: number
+      weight: number
+      stats: {
+        hp: number
+        attack: number
+        defense: number
+        specialAttack: number
+        specialDefense: number
+        speed: number
+      }
+    }) => void
+
+    vi.mocked(fetchPokemonByName)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirst = resolve
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveSecond = resolve
+          }),
+      )
+
+    render(<SearchScreen />)
+
+    fireEvent.change(screen.getByLabelText('Search by name'), { target: { value: 'pikachu' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Search Pokémon' }))
+
+    fireEvent.change(screen.getByLabelText('Search by name'), { target: { value: 'bulbasaur' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Search Pokémon' }))
+
+    resolveSecond({
+      id: 1,
+      dexNumber: 1,
+      name: 'bulbasaur',
+      imageUrl: 'bulbasaur.png',
+      types: [{ id: 4, name: 'grass' }],
+      baseExperience: 64,
+      height: 7,
+      weight: 69,
+      stats: {
+        hp: 45,
+        attack: 49,
+        defense: 49,
+        specialAttack: 65,
+        specialDefense: 65,
+        speed: 45,
+      },
+    })
+
+    expect(await screen.findByRole('heading', { name: 'bulbasaur' })).toBeInTheDocument()
+
+    resolveFirst({
+      id: 25,
+      dexNumber: 25,
+      name: 'pikachu',
+      imageUrl: 'pikachu.png',
+      types: [{ id: 17, name: 'electric' }],
+      baseExperience: 112,
+      height: 4,
+      weight: 60,
+      stats: {
+        hp: 35,
+        attack: 55,
+        defense: 40,
+        specialAttack: 50,
+        specialDefense: 50,
+        speed: 90,
+      },
+    })
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'bulbasaur' })).toBeInTheDocument()
+    })
+  })
+
   it('groups type results under their species with alternate forms attached', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch')
     fetchMock.mockResolvedValueOnce(
