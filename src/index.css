@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+@font-face {
+	font-family: "Pokemon GB";
+	src: url("./assets/fonts/PokemonGb-RAeo.ttf") format("truetype");
+	font-display: swap;
+}
+
+@theme {
+	--color-pokedex-red: #d94b43;
+	--color-pokedex-red-dark: #a93232;
+	--color-pokedex-paper: #f7f4eb;
+	--color-pokedex-ink: #252a2c;
+	--color-pokedex-muted: #687276;
+	--color-pokedex-screen: #dce9d2;
+	--font-pixel: "Pokemon GB", monospace;
+}
+
+:root {
+	font-family: "Trebuchet MS", sans-serif;
+	color: var(--color-pokedex-ink);
+	background: var(--color-pokedex-paper);
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	min-width: 320px;
+	min-height: 100vh;
+	margin: 0;
+}
+
+button,
+input {
+	font: inherit;
+}
