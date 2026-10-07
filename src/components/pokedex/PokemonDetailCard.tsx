@@ -39,7 +39,7 @@ export function PokemonDetailCard({
             <span>#{String(pokemon.dexNumber).padStart(3, '0')}</span>
           </div>
 
-          <h3 className="mt-2 min-w-0 break-words text-2xl font-bold capitalize leading-tight text-pokedex-ink sm:text-3xl">
+          <h3 className="mt-2 min-w-0 wrap-break-word text-2xl font-bold capitalize leading-tight text-pokedex-ink sm:text-3xl">
             {formatPokemonName(pokemon.name)}
           </h3>
 
