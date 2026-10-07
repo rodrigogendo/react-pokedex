@@ -111,15 +111,18 @@ export async function fetchPokemonByType(typeName: string): Promise<PokemonSumma
     throw toUserFriendlyError(typeName, 'type')
   }
 
-  const typeId = typeResponse.id
-  const detailedType = await requestJson<PokemonTypeDetailResponse>(apiUrl(`/type/${typeId}`))
+  const { id: typeId, name: typeLabel } = typeResponse
 
-  return detailedType.pokemon.map(({ pokemon }) => ({
-    id: parseResourceId(pokemon.url),
-    name: pokemon.name,
-    imageUrl: null,
-    types: [],
-  }))
+  return typeResponse.pokemon.map(({ pokemon }) => {
+    const id = parseResourceId(pokemon.url)
+
+    return {
+      id,
+      name: pokemon.name,
+      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`,
+      types: [{ id: typeId, name: typeLabel }],
+    }
+  })
 }
 
 export async function fetchTypeList(): Promise<PokemonTypeListResponse> {

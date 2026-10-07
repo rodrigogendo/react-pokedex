@@ -11,6 +11,12 @@ vi.mock('../../api/pokemonApi', () => ({
   fetchPokemonByType: vi.fn(),
 }))
 
+const mockFetchResponse = (payload: unknown) =>
+  ({
+    ok: true,
+    json: async () => payload,
+  } as Response)
+
 describe('PokedexScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -73,5 +79,32 @@ describe('PokedexScreen', () => {
       expect(fetchPokemonByType).toHaveBeenCalledWith('electric')
     })
     expect((await screen.findAllByText('pikachu')).length).toBeGreaterThan(0)
+  })
+
+  it('maps type results to a summary with a generated sprite URL', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+    fetchMock.mockResolvedValueOnce(
+      mockFetchResponse({
+        id: 13,
+        name: 'electric',
+        pokemon: [{ pokemon: { name: 'pikachu', url: 'https://pokeapi.co/api/v2/pokemon/25/' } }],
+      }),
+    )
+
+    const { fetchPokemonByType: actualFetchPokemonByType } =
+      await vi.importActual<typeof import('../../api/pokemonApi')>('../../api/pokemonApi')
+
+    const results = await actualFetchPokemonByType('electric')
+
+    expect(results).toEqual([
+      {
+        id: 25,
+        name: 'pikachu',
+        imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/25.png',
+        types: [{ id: 13, name: 'electric' }],
+      },
+    ])
+
+    fetchMock.mockRestore()
   })
 })
