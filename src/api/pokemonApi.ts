@@ -72,12 +72,16 @@ const requestJson = async <T>(url: string): Promise<T> => {
 export async function fetchPokemonList(limit = 1000): Promise<PokemonSummary[]> {
   const list = await requestJson<PokemonListResponse>(`${apiUrl('/pokemon')}?limit=${limit}`)
 
-  return list.results.map(({ name, url }) => ({
-    id: parseResourceId(url),
-    name,
-    imageUrl: null,
-    types: [],
-  }))
+  return list.results.map(({ name, url }) => {
+    const id = parseResourceId(url)
+
+    return {
+      id,
+      name,
+      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${id}.png`,
+      types: [],
+    }
+  })
 }
 
 export async function fetchPokemonByName(name: string): Promise<PokemonDetail> {
