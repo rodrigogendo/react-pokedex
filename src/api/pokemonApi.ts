@@ -39,11 +39,30 @@ const mapPokemonStats = (stats: PokemonApiDetail['stats']): PokemonStats => ({
   speed: getStatValue(stats, 'speed'),
 })
 
+const getPokemonImageUrl = (pokemon: PokemonApiDetail): string | null => {
+  const homeImageUrl = pokemon.sprites?.other?.home?.front_default
+  if (homeImageUrl) {
+    return homeImageUrl
+  }
+
+  const officialArtworkUrl = pokemon.sprites?.other?.['official-artwork']?.front_default
+  if (officialArtworkUrl) {
+    return officialArtworkUrl
+  }
+
+  const frontDefaultUrl = pokemon.sprites?.front_default
+  if (frontDefaultUrl) {
+    return frontDefaultUrl
+  }
+
+  return null
+}
+
 const mapPokemonSummary = (pokemon: PokemonApiDetail): PokemonSummary => ({
   id: pokemon.id,
   dexNumber: parseResourceId(pokemon.species.url),
   name: pokemon.name,
-  imageUrl: pokemon.sprites?.other?.home?.front_default ?? null,
+  imageUrl: getPokemonImageUrl(pokemon),
   types: pokemon.types.map(({ type }) => ({
     id: parseResourceId(type.url),
     name: type.name,
@@ -84,6 +103,16 @@ const mapPokemonDetail = (pokemon: PokemonApiDetail): PokemonDetail => ({
   stats: mapPokemonStats(pokemon.stats),
 })
 
+class ApiRequestError extends Error {
+  readonly status: number
+
+  constructor(status: number, message: string) {
+    super(message)
+    this.name = 'ApiRequestError'
+    this.status = status
+  }
+}
+
 const toUserFriendlyError = (query: string, type: 'Pokémon' | 'type') => {
   const label = type === 'Pokémon' ? 'Pokémon' : 'type'
   return new Error(`No ${label} found for "${query}". Please try another search.`)
@@ -93,7 +122,7 @@ const requestJson = async <T>(url: string): Promise<T> => {
   const response = await fetch(url)
 
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`)
+    throw new ApiRequestError(response.status, `Request failed with status ${response.status}`)
   }
 
   return (await response.json()) as T
@@ -148,9 +177,16 @@ export async function fetchPokemonByName(name: string): Promise<PokemonDetail> {
     throw toUserFriendlyError(name, 'Pokémon')
   }
 
-  const pokemon = await requestJson<PokemonApiDetail>(apiUrl(`/pokemon/${normalizedName}`))
+  try {
+    const pokemon = await requestJson<PokemonApiDetail>(apiUrl(`/pokemon/${normalizedName}`))
+    return mapPokemonDetail(pokemon)
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 404) {
+      throw toUserFriendlyError(name, 'Pokémon')
+    }
 
-  return mapPokemonDetail(pokemon)
+    throw error
+  }
 }
 
 export async function fetchPokemonByType(typeName: string): Promise<PokemonSummary[]> {
@@ -160,9 +196,17 @@ export async function fetchPokemonByType(typeName: string): Promise<PokemonSumma
     throw toUserFriendlyError(typeName, 'type')
   }
 
-  const typeResponse = await requestJson<PokemonTypeDetailResponse>(
-    apiUrl(`/type/${normalizedTypeName}`),
-  )
+  let typeResponse: PokemonTypeDetailResponse
+
+  try {
+    typeResponse = await requestJson<PokemonTypeDetailResponse>(apiUrl(`/type/${normalizedTypeName}`))
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 404) {
+      throw toUserFriendlyError(typeName, 'type')
+    }
+
+    throw error
+  }
 
   if (!typeResponse?.pokemon?.length) {
     throw toUserFriendlyError(typeName, 'type')
@@ -195,5 +239,13 @@ export async function fetchTypeByName(typeName: string): Promise<PokemonTypeDeta
     throw toUserFriendlyError(typeName, 'type')
   }
 
-  return requestJson<PokemonTypeDetailResponse>(apiUrl(`/type/${normalizedTypeName}`))
+  try {
+    return await requestJson<PokemonTypeDetailResponse>(apiUrl(`/type/${normalizedTypeName}`))
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 404) {
+      throw toUserFriendlyError(typeName, 'type')
+    }
+
+    throw error
+  }
 }

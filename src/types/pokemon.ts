@@ -74,8 +74,12 @@ export type PokemonApiDetail = {
   types: PokemonTypeApiEntry[]
   stats: PokemonStatApiEntry[]
   sprites: {
+    front_default: string | null
     other: {
       home: {
+        front_default: string | null
+      }
+      'official-artwork'?: {
         front_default: string | null
       }
     }

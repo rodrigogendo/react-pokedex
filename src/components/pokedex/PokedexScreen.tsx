@@ -22,6 +22,13 @@ export function PokedexScreen() {
     setSelectedId((currentSelectedId) => (currentSelectedId === id ? null : id))
   }
 
+  const handlePageChange = (nextPage: number) => {
+    setSelectedId(null)
+    setSelectedPokemon(null)
+    setSelectedFormName(null)
+    setPage(nextPage)
+  }
+
   const handleFormSelect = (form: PokemonFormSummary) => {
     setSelectedFormName(form.name)
   }
@@ -41,12 +48,15 @@ export function PokedexScreen() {
 
         setPokemon(items)
         setTotalCount(rosterCount)
+
         setSelectedId((currentSelectedId) => {
-          if (items.some(({ id }) => id === currentSelectedId)) {
-            return currentSelectedId
+          if (currentSelectedId !== null && !items.some(({ id }) => id === currentSelectedId)) {
+            setSelectedPokemon(null)
+            setSelectedFormName(null)
+            return null
           }
 
-          return null
+          return currentSelectedId
         })
         setStatus('ready')
       } catch (error) {
@@ -124,7 +134,7 @@ export function PokedexScreen() {
       <PokemonPagination
         currentPage={page}
         totalPages={totalPages}
-        onPageChange={setPage}
+        onPageChange={handlePageChange}
       />
 
       <PokemonList
@@ -141,7 +151,7 @@ export function PokedexScreen() {
         <PokemonPagination
           currentPage={page}
           totalPages={totalPages}
-          onPageChange={setPage}
+          onPageChange={handlePageChange}
         />
       </div>
     </section>

@@ -19,6 +19,16 @@ export function PokemonDetailCard({
 }: PokemonDetailCardProps) {
   return (
     <article className="mt-6 animate-[formSlideIn_240ms_ease-out] rounded-2xl border-4 border-pokedex-red bg-pokedex-paper p-4 shadow-[6px_6px_0_var(--color-pokedex-red-dark)] sm:p-6">
+      <div className="mb-6 w-full text-left">
+        <div className="flex items-center justify-start gap-2 text-xs font-bold uppercase tracking-[0.18em] text-pokedex-red-dark">
+          <span>#{String(pokemon.dexNumber).padStart(3, '0')}</span>
+        </div>
+
+        <h3 className="mt-2 max-w-full text-left text-2xl font-bold capitalize leading-tight text-pokedex-ink wrap-break-word sm:text-3xl">
+          {formatPokemonName(pokemon.name)}
+        </h3>
+      </div>
+
       <div className="flex flex-col gap-5 md:flex-row md:items-center">
         <div className="flex min-w-0 flex-1 items-center justify-center rounded-xl border-2 border-pokedex-red bg-white p-4">
           {pokemon.imageUrl ? (
@@ -35,13 +45,6 @@ export function PokemonDetailCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-pokedex-red-dark">
-            <span>#{String(pokemon.dexNumber).padStart(3, '0')}</span>
-          </div>
-
-          <h3 className="mt-2 min-w-0 wrap-break-word text-2xl font-bold capitalize leading-tight text-pokedex-ink sm:text-3xl">
-            {formatPokemonName(pokemon.name)}
-          </h3>
 
           {alternateForms.length > 0 && onFormSelect && (
             <div className="mt-3">

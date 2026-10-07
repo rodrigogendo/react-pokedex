@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type SyntheticEvent } from 'react'
 
 import { fetchPokemonByName, fetchPokemonByType } from '../../api/pokemonApi'
 import type { PokemonDetail, PokemonFormSummary, PokemonSummary } from '../../types/pokemon'
@@ -49,7 +49,7 @@ export function SearchScreen() {
     }
   }, [selectedTypeSummary, selectedTypeFormName])
 
-  const handleNameSearch = async (event: FormEvent<HTMLFormElement>) => {
+  const handleNameSearch = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const normalizedQuery = nameQuery.trim().toLowerCase()

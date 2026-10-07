@@ -20,7 +20,7 @@ const mockFetchResponse = (payload: unknown) =>
 
 describe('PokedexScreen', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.resetAllMocks()
   })
 
   it('renders Pokémon fetched from the API', async () => {
@@ -37,6 +37,121 @@ describe('PokedexScreen', () => {
     expect(screen.getByText('Pokémon roster')).toBeInTheDocument()
     expect((await screen.findAllByText('Gengar')).length).toBeGreaterThan(0)
     expect(screen.getAllByText('#094').length).toBeGreaterThan(0)
+  })
+
+  it('returns a friendly message when the Pokémon API responds with a 404', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      json: async () => ({ detail: 'Not found' }),
+    } as Response)
+
+    const { fetchPokemonByName: actualFetchPokemonByName } =
+      await vi.importActual<typeof import('../../api/pokemonApi')>('../../api/pokemonApi')
+
+    await expect(actualFetchPokemonByName('missingmon')).rejects.toThrow(
+      'No Pokémon found for "missingmon". Please try another search.',
+    )
+
+    fetchMock.mockRestore()
+  })
+
+  it('falls back to a valid front_default sprite when the home sprite is missing', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: 133,
+        name: 'eevee',
+        species: { name: 'eevee', url: 'https://pokeapi.co/api/v2/pokemon-species/133/' },
+        base_experience: 65,
+        height: 3,
+        weight: 65,
+        types: [{ slot: 1, type: { name: 'normal', url: 'https://pokeapi.co/api/v2/type/1/' } }],
+        stats: [{ base_stat: 55, effort: 0, stat: { name: 'hp', url: 'https://pokeapi.co/api/v2/stat/1/' } }],
+        sprites: {
+          front_default: 'https://example.com/eevee-front.png',
+          other: {
+            home: { front_default: null },
+          },
+        },
+      }),
+    } as Response)
+
+    const { fetchPokemonByName: actualFetchPokemonByName } =
+      await vi.importActual<typeof import('../../api/pokemonApi')>('../../api/pokemonApi')
+
+    await expect(actualFetchPokemonByName('eevee')).resolves.toMatchObject({
+      imageUrl: 'https://example.com/eevee-front.png',
+      name: 'eevee',
+    })
+
+    fetchMock.mockRestore()
+  })
+
+  it('clears stale detail cards when the selected Pokémon is no longer in the active roster', async () => {
+    vi.mocked(fetchPokemonPage)
+      .mockResolvedValueOnce({
+        totalCount: 101,
+        items: Array.from({ length: 100 }, (_, index) => ({
+          id: index + 1,
+          dexNumber: index + 1,
+          name: index === 24 ? 'pikachu' : `pokemon-${index + 1}`,
+          imageUrl: index === 24 ? 'pikachu.png' : `pokemon-${index + 1}.png`,
+          types: [{ id: 17, name: 'electric' }],
+        })),
+      })
+      .mockResolvedValueOnce({
+        totalCount: 101,
+        items: [
+          { id: 101, dexNumber: 101, name: 'electrode', imageUrl: 'electrode.png', types: [{ id: 13, name: 'electric' }] },
+          { id: 102, dexNumber: 102, name: 'exeggcute', imageUrl: 'exeggcute.png', types: [{ id: 4, name: 'grass' }] },
+        ],
+      })
+
+    vi.mocked(fetchPokemonByName).mockResolvedValue({
+      id: 25,
+      dexNumber: 25,
+      name: 'pikachu',
+      imageUrl: 'pikachu.png',
+      types: [{ id: 17, name: 'electric' }],
+      baseExperience: 112,
+      height: 4,
+      weight: 60,
+      stats: {
+        hp: 35,
+        attack: 55,
+        defense: 40,
+        specialAttack: 50,
+        specialDefense: 50,
+        speed: 90,
+      },
+    })
+
+    render(<PokedexScreen />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /pikachu/i }))
+
+    expect(await screen.findByText('Base Stats')).toBeInTheDocument()
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Next' })[0])
+
+    await waitFor(() => {
+      expect(fetchPokemonPage).toHaveBeenCalledTimes(2)
+    })
+
+    expect(screen.queryByText('Base Stats')).not.toBeInTheDocument()
+  })
+
+  it('renders sprite-backed type badges in the type filter', async () => {
+    vi.mocked(fetchPokemonByType).mockResolvedValue([])
+
+    render(<SearchScreen />)
+
+    const electricButton = screen.getByRole('button', { name: 'electric' })
+    const icon = electricButton.querySelector('[aria-hidden="true"]')
+
+    expect(icon).toBeInTheDocument()
+    expect(icon?.getAttribute('style') ?? '').toContain('background-image')
   })
 
   it('searches Pokémon by name and by type', async () => {
