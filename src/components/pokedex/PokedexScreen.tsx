@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { fetchPokemonList } from '../../api/pokemonApi'
 import type { PokemonSummary } from '../../types/pokemon'
+import { PokemonDetailCard } from './PokemonDetailCard'
 import { PokemonList } from './PokemonList'
 
 export function PokedexScreen() {
@@ -65,27 +66,26 @@ export function PokedexScreen() {
       />
 
       {selectedPokemon && status === 'ready' && (
-        <div className="mt-6 rounded-xl border-2 border-pokedex-red bg-pokedex-paper p-4">
+        <div className="mt-6">
           <p className="font-pixel text-[10px] uppercase tracking-[0.18em] text-pokedex-red-dark">
             Selected Pokémon
           </p>
-          <div className="mt-3 flex items-center gap-4">
-            {selectedPokemon.imageUrl ? (
-              <img
-                src={selectedPokemon.imageUrl}
-                alt={selectedPokemon.name}
-                className="h-16 w-16 rounded-lg bg-white object-contain p-2 shadow-sm"
-              />
-            ) : null}
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.12em] text-pokedex-red-dark">
-                #{String(selectedPokemon.id).padStart(3, '0')}
-              </p>
-              <p className="text-2xl font-bold capitalize text-pokedex-ink">
-                {selectedPokemon.name}
-              </p>
-            </div>
-          </div>
+          <PokemonDetailCard
+            pokemon={{
+              ...selectedPokemon,
+              baseExperience: null,
+              height: 0,
+              weight: 0,
+              stats: {
+                hp: 0,
+                attack: 0,
+                defense: 0,
+                specialAttack: 0,
+                specialDefense: 0,
+                speed: 0,
+              },
+            }}
+          />
         </div>
       )}
     </section>
