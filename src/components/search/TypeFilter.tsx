@@ -1,5 +1,6 @@
 import type { TypeFilterProps } from '../../types/search'
 import { pokemonTypes } from '../../types/search'
+import { getPokemonTypeIconUrl } from '../../utils/pokemonTypeIcons'
 import { PokemonList } from '../pokedex/PokemonList'
 
 export function TypeFilter({
@@ -26,15 +27,20 @@ export function TypeFilter({
             <button
               key={typeName}
               type="button"
+              aria-label={typeName}
               aria-pressed={isSelected}
               onClick={() => onTypeSelect(typeName)}
-              className={`rounded-md border-2 px-3 py-1.5 text-xs font-bold capitalize transition ${
+              className={`rounded-md border-2 p-1 transition ${
                 isSelected
                   ? 'border-pokedex-red bg-pokedex-red text-white'
                   : 'border-pokedex-red bg-pokedex-paper text-pokedex-red-dark hover:bg-white'
               }`}
             >
-              {typeName}
+              <span
+                aria-hidden="true"
+                className="block h-7 w-28 bg-contain bg-center bg-no-repeat"
+                style={{ backgroundImage: `url("${getPokemonTypeIconUrl(typeName)}")` }}
+              />
             </button>
           )
         })}

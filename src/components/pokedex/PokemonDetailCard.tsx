@@ -1,6 +1,7 @@
 import type { PokemonDetail, PokemonFormSummary } from '../../types/pokemon'
 import { pokemonStatLabels } from '../../types/pokemon'
 import { formatPokemonName } from '../../utils/pokemon'
+import { getPokemonTypeIconUrl } from '../../utils/pokemonTypeIcons'
 
 type PokemonDetailCardProps = {
   pokemon: PokemonDetail
@@ -74,12 +75,12 @@ export function PokemonDetailCard({
 
           <div className="mt-3 flex flex-wrap gap-2">
             {pokemon.types.map(({ name, id }) => (
-              <span
+              <img
                 key={`${id}-${name}`}
-                className="rounded-full border-2 border-pokedex-red bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-pokedex-red-dark sm:text-xs"
-              >
-                {name}
-              </span>
+                src={getPokemonTypeIconUrl(name)}
+                alt={`${name} type`}
+                className="h-7 w-auto object-contain"
+              />
             ))}
           </div>
 
