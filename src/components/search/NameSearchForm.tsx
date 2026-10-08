@@ -25,10 +25,11 @@ export function NameSearchForm({
           <input
             id="pokemon-name-search"
             type="text"
+            maxLength={99}
             value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
+            onChange={(event) => onQueryChange(event.target.value.slice(0, 99))}
             placeholder="e.g. pikachu"
-            className="w-full rounded-lg border-2 border-transparent bg-white px-3 py-2 text-base text-pokedex-ink outline-none transition focus:border-pokedex-red"
+            className="min-w-0 w-full rounded-lg border-2 border-transparent bg-white px-3 py-2 text-base text-pokedex-ink outline-none transition focus:border-pokedex-red"
           />
           <button
             type="submit"
@@ -43,7 +44,7 @@ export function NameSearchForm({
         )}
 
         {status === 'error' && error && (
-          <p className="mt-3 text-sm font-bold text-pokedex-red-dark">{error}</p>
+          <p className="mt-3 break-all text-sm font-bold text-pokedex-red-dark">{error}</p>
         )}
 
         {status === 'success' && !result && (

@@ -154,6 +154,29 @@ describe('PokedexScreen', () => {
     expect(icon?.getAttribute('style') ?? '').toContain('background-image')
   })
 
+  it('limits name searches to 99 characters and wraps long error text', async () => {
+    const longQuery = 'a'.repeat(150)
+    const boundedQuery = longQuery.slice(0, 99)
+    vi.mocked(fetchPokemonByName).mockRejectedValue(
+      new Error(`No Pokémon found for "${boundedQuery}". Please try another search.`),
+    )
+
+    render(<SearchScreen />)
+
+    const nameInput = screen.getByLabelText('Search by name')
+    expect(nameInput).toHaveAttribute('maxLength', '99')
+
+    fireEvent.change(nameInput, { target: { value: longQuery } })
+    expect(nameInput).toHaveValue(boundedQuery)
+    fireEvent.click(screen.getByRole('button', { name: 'Search Pokémon' }))
+
+    const errorMessage = await screen.findByText(
+      `No Pokémon found for "${boundedQuery}". Please try another search.`,
+    )
+    expect(errorMessage).toHaveClass('break-all')
+    expect(fetchPokemonByName).toHaveBeenCalledWith(boundedQuery)
+  })
+
   it('searches Pokémon by name and by type', async () => {
     vi.mocked(fetchPokemonByName).mockResolvedValue({
       id: 25,
