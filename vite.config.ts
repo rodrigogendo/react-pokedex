@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  base: process.env.GITHUB_ACTIONS ? '/react-pokedex/' : '/',
   plugins: [
     react(),
     tailwindcss(),
